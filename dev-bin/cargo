@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-cd "$(dirname "${BASH_SOURCE[0]}")"
-
-SRC_DIR=$(realpath ..)
-
-docker run -v ${SRC_DIR}:/ros \
-  rustlang/rust:nightly \
-  bash -c "cd /ros && cargo $*"
