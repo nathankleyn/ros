@@ -2,6 +2,8 @@
 
 ROS (Rust Operating System) is a barebones kernel written in Rust whilst following [Phil Opperman's "Writing an OS in Rust" series][Phil OS Blog].
 
+![A screenshot of QEMU running the compiled bootable kernel image.](/screenshot.png)
+
 ## Requirements
 
 * Rust Nightly: Install via Rustup for ease-of-use.
