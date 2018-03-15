@@ -1,29 +1,36 @@
+#![feature(const_fn)]
 #![feature(lang_items)]
 #![no_main]
 #![no_std]
+
+// Enables us to work around the fact that that Rust's const evaluator is not
+// able to convert raw pointers to references at compile time.
+#[macro_use]
+extern crate lazy_static;
 
 // Prevent linker faults because functions normally provided by libc aren't
 // there. LLVM lowers some intrinsics which will now keep working happily.
 extern crate rlibc;
 
-/// Raw pointer to the VGA buffer start. The VGA buffer is available via memory
-/// mapped IO as `0xb8000`.
-/// See more about raw pointers at
-/// https://doc.rust-lang.org/stable/book/second-edition/ch19-01-unsafe-rust.html#dereferencing-a-raw-pointer
-const VGA_BUFFER_ADDR: *mut u8 = 0xb8000 as *mut u8;
-static BOOT_MESSAGE: &[u8] = b"ROS: Rust Operating System";
+// Gives us spinlocks, where we basically spin the CPU until the lock is free.
+// Why this and not a Mutex or something? Because we're in an OS so we have
+// no threads or even the concept of blocking!
+extern crate spin;
 
-static COLOUR_LIGHT_GREEN: u8 = 0xc;
+// Allows us to mark regions as volatile and therefore off limits for
+// optimisation.
+extern crate volatile;
+
+#[macro_use]
+mod vga_buffer;
+
+static BOOT_MESSAGE: &str = "ROS: Rust Operating System";
 
 /// Initial entrypoint for kernel.
 #[no_mangle]
 pub extern fn _start() -> ! {
-    for (i, &byte) in BOOT_MESSAGE.iter().enumerate() {
-        unsafe {
-            *VGA_BUFFER_ADDR.offset(i as isize * 2) = byte;
-            *VGA_BUFFER_ADDR.offset(i as isize * 2 + 1) = COLOUR_LIGHT_GREEN;
-        }
-    }
+    println!("{}", BOOT_MESSAGE);
+    println!("We are now able to print multiple lines to the buffer!");
 
     loop {}
 }
